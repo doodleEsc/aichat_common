@@ -1,0 +1,55 @@
+services:
+  api: &main_app
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    image: aichat_common:${AICHAT_COMMON_VERSION:-latest}
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      AICHAT_COMMON_HOST: 0.0.0.0
+      AICHAT_COMMON_DB_HOST: aichat_common-db
+      AICHAT_COMMON_DB_PORT: 27017
+      AICHAT_COMMON_DB_USER: aichat_common
+      AICHAT_COMMON_DB_PASS: aichat_common
+      AICHAT_COMMON_DB_BASE: admin
+      AICHAT_COMMON_REDIS_HOST: aichat_common-redis
+  db:
+    image: mongo:7.0
+    hostname: aichat_common-db
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: "aichat_common"
+      MONGO_INITDB_ROOT_PASSWORD: "aichat_common"
+    command: "mongod"
+    volumes:
+      - aichat_common-db-data:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 40
+
+  redis:
+    image: bitnami/redis:6.2.5
+    hostname: "aichat_common-redis"
+    restart: always
+    environment:
+      ALLOW_EMPTY_PASSWORD: "yes"
+    healthcheck:
+      test: redis-cli ping
+      interval: 1s
+      timeout: 3s
+      retries: 50
+
+
+
+volumes:
+  aichat_common-db-data:
+    name: aichat_common-db-data
