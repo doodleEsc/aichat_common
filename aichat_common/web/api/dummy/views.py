@@ -19,8 +19,8 @@ async def get_dummy_models(
     """
     Retrieve all dummy objects from the database.
 
-    :param limit: limit of dummy objects, defaults to 10.
     :param offset: offset of dummy objects, defaults to 0.
+    :param limit: limit of dummy objects, defaults to 10.
     :param dummy_dao: DAO for dummy models.
     :return: list of dummy objects from database.
     """
