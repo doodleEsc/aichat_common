@@ -1,10 +1,10 @@
 import pymongo
 from typing import List
-from pydantic import Field
+from pydantic import Field, BaseModel
 from beanie import Document
 
 
-class BotCloth(Document):
+class BotCloth(BaseModel):
     cloth_id: str = Field(..., description="服装的ID")
     cloth_description: str = Field(..., description="服装描述")
     cloth_in_use: bool = Field(default=False, description="服装是否正在使用")
@@ -38,4 +38,4 @@ class BotModel(Document):
         return f"<Bot({self.bot_name}) {self.bot_id}>"
 
     def __str__(self) -> str:
-        return f"Bot: {self.bot_name} ({self.client_id})"
+        return f"Bot: {self.bot_name} ({self.bot_id})"

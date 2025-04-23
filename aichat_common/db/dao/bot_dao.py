@@ -1,10 +1,17 @@
 from typing import List, Optional
 
-from aichat_common.db.models.bot_model import BotModel, BotCloth
+from aichat_common.db.models.bot_model import BotModel
 
 
 class BotDAO:
     """Class for accessing bot table."""
+
+    async def get_bots_count(self) -> int:
+        """
+        Get the total count of bots in the database.
+        :return: Total number of bots.
+        """
+        return await BotModel.count()
 
     async def get_bot_by_id(self, bot_id: str) -> Optional[BotModel]:
         """
@@ -15,13 +22,13 @@ class BotDAO:
         """
         return await BotModel.find_one(BotModel.bot_id == bot_id)
 
-    async def create_bot_model(self, **kwargs) -> None:
+    async def create_bot_model(self, **kwargs) -> Optional[BotModel]:
         """
         Add a single bot to the database.
 
         :param kwargs: fields for BotModel.
         """
-        await BotModel.insert_one(BotModel(**kwargs))
+        return await BotModel.insert_one(BotModel(**kwargs))
 
     async def get_all_bots(self, limit: int, offset: int) -> List[BotModel]:
         """

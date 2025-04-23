@@ -2,6 +2,7 @@ import json
 import logging
 
 from typing import List, Optional
+from redis.asyncio import Redis
 
 from aichat_common.db.dao.bot_dao import BotDAO
 from aichat_common.db.models.bot_model import BotModel
@@ -17,9 +18,13 @@ class BotService:
     Service layer for bot business logic.
     """
 
-    def __init__(self, bot_dao: BotDAO, redis_pool=None, cache_prefix: str = "bot:"):
-        from redis.asyncio import Redis
+    async def get_bots_count(self) -> int:
+        """
+        Get the total count of bots.
+        """
+        return await self.bot_dao.get_bots_count()
 
+    def __init__(self, bot_dao: BotDAO, redis_pool=None, cache_prefix: str = "bot:"):
         self.bot_dao = bot_dao
         self.redis_pool = redis_pool  # optional, for caching or future use
         self.cache_prefix = cache_prefix  # cache key prefix for bots
@@ -28,11 +33,11 @@ class BotService:
             # Initialize Redis client using the connection pool, following project convention
             self.redis = Redis(connection_pool=redis_pool)
 
-    async def create_bot(self, **kwargs) -> None:
+    async def create_bot(self, **kwargs) -> Optional[BotModel]:
         """
         Create a new bot.
         """
-        await self.bot_dao.create_bot_model(**kwargs)
+        return await self.bot_dao.create_bot_model(**kwargs)
 
     async def get_bot_by_id(self, bot_id: str) -> Optional[BotModel]:
         """

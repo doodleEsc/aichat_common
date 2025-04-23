@@ -9,6 +9,7 @@ from aichat_common.web.api.bot.schema import (
     BotResponse,
     BotPageDataDTO,
     BotPageResponse,
+    BotClothDTO,
     SetClothInUseDTO,
 )
 from aichat_common.services.bot.service import BotService
@@ -28,9 +29,9 @@ async def list_bots(
     """
     offset = (page - 1) * size
     bots = await bot_service.get_all_bots(limit=size, offset=offset)
-    total = len(bots)  # Replace with actual count from DB if available
+    total = await bot_service.get_bots_count()  # Use actual count from DB
     total_pages = (total + size - 1) // size if size else 1
-    items = [BotDTO.model_validate(bot) for bot in bots]
+    items = [BotDTO.model_validate(bot, from_attributes=True) for bot in bots]
     data = BotPageDataDTO(
         items=items,
         page=page,
@@ -38,6 +39,9 @@ async def list_bots(
         total=total,
         total_pages=total_pages,
     )
+
+    print(data.model_dump())
+
     return BotPageResponse(data=data)
 
 
@@ -49,12 +53,15 @@ async def create_bot(
     """
     Create a new bot.
     """
-    await bot_service.create_bot(**bot_in.model_dump())
+    bot = await bot_service.create_bot(**bot_in.model_dump())
+    print(bot)
+
+    if not bot:
+        raise HTTPException(status_code=500, detail="create bot failed")
+
     # Usually, you would return the created object; here, just return a success response.
     return BotResponse(
-        data=BotDTO(
-            **bot_in.model_dump(), id=""
-        ),  # id should be set if returned by service
+        data=BotDTO(**bot.model_dump()),  # id should be set if returned by service
         message="Bot created successfully",
         code=0,
     )
@@ -119,5 +126,6 @@ async def set_cloth_in_use(
     if not updated_bot:
         raise HTTPException(status_code=404, detail="Bot or cloth not found")
     return BotResponse(
-        data=BotDTO.model_validate(updated_bot), message="Cloth set in use"
+        data=BotDTO.model_validate(updated_bot, from_attributes=True),
+        message="Cloth set in use",
     )

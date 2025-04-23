@@ -126,5 +126,5 @@ class SetClothInUseDTO(BaseModel):
     """
     DTO for setting a specific cloth as in use for a bot.
     """
-    cloth_id: str
 
+    cloth_id: str

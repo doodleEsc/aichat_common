@@ -1,4 +1,4 @@
-from typing import Any, AsyncGenerator
+from typing import Any, AsyncGenerator, Generator
 
 import beanie
 import pytest
@@ -10,8 +10,11 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from redis.asyncio import ConnectionPool
 
 from aichat_common.services.redis.dependency import get_redis_pool
+from aichat_common.services.bot.dependency import get_bot_service
 from aichat_common.settings import settings
 from aichat_common.web.application import get_app
+from aichat_common.services.bot.service import BotService
+from aichat_common.db.dao.bot_dao import BotDAO
 
 
 @pytest.fixture(scope="session")
@@ -58,6 +61,21 @@ async def fake_redis_pool() -> AsyncGenerator[ConnectionPool, None]:
 
 
 @pytest.fixture
+async def bot_service(
+    fake_redis_pool: ConnectionPool,
+) -> BotService:
+    """
+    Fixture that provides a BotService instance with a fake Redis pool.
+
+    :param fake_redis_pool: The fake Redis connection pool.
+    :return: An instance of BotService.
+    """
+    bot_dao = BotDAO()
+    service = BotService(bot_dao=bot_dao, redis_pool=fake_redis_pool)
+    return service
+
+
+@pytest.fixture
 def fastapi_app(
     fake_redis_pool: ConnectionPool,
 ) -> FastAPI:
@@ -68,6 +86,9 @@ def fastapi_app(
     """
     application = get_app()
     application.dependency_overrides[get_redis_pool] = lambda: fake_redis_pool
+    application.dependency_overrides[get_bot_service] = lambda: BotService(
+        BotDAO(), redis_pool=fake_redis_pool
+    )
     return application
 
 

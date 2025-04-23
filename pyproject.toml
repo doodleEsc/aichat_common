@@ -66,8 +66,7 @@ filterwarnings = [
     "ignore:.*unclosed.*:ResourceWarning",
 ]
 env = [
-    "AICHAT_COMMON_ENVIRONMENT=pytest",
-    "AICHAT_COMMON_DB_BASE=admin",
+    "AICHAT_COMMON_ENVIRONMENT=dev",
 ]
 
 [tool.ruff]
