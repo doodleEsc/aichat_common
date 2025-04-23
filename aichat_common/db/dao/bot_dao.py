@@ -6,6 +6,15 @@ from aichat_common.db.models.bot_model import BotModel, BotCloth
 class BotDAO:
     """Class for accessing bot table."""
 
+    async def get_bot_by_id(self, bot_id: str) -> Optional[BotModel]:
+        """
+        Get a single bot model by bot_id.
+
+        :param bot_id: bot id.
+        :return: BotModel instance or None if not found.
+        """
+        return await BotModel.find_one(BotModel.bot_id == bot_id)
+
     async def create_bot_model(self, **kwargs) -> None:
         """
         Add a single bot to the database.

@@ -7,6 +7,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 
 from aichat_common.db.models import load_all_models
 from aichat_common.services.redis.lifespan import init_redis, shutdown_redis
+from aichat_common.services.bot.lifespan import init_bot_service, shutdown_bot_service
 from aichat_common.settings import settings
 
 
@@ -36,7 +37,9 @@ async def lifespan_setup(
     app.middleware_stack = None
     await _setup_db(app)
     init_redis(app)
+    init_bot_service(app)  # Initialize BotService after Redis
     app.middleware_stack = app.build_middleware_stack()
 
     yield
     await shutdown_redis(app)
+    await shutdown_bot_service(app)  # Shutdown BotService on app shutdown

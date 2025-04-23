@@ -1,4 +1,5 @@
 import enum
+import multiprocessing
 from pathlib import Path
 from tempfile import gettempdir
 from typing import Optional
@@ -38,7 +39,7 @@ class Settings(BaseSettings):
     # Current environment
     environment: str = "dev"
 
-    log_level: LogLevel = LogLevel.INFO
+    log_level: LogLevel = LogLevel.DEBUG
     # Variables for the database
     db_host: str = "localhost"
     db_port: int = 27017
@@ -53,6 +54,20 @@ class Settings(BaseSettings):
     redis_user: Optional[str] = None
     redis_pass: Optional[str] = None
     redis_base: Optional[int] = None
+
+    def model_post_init(self, __context):
+        """
+        Dynamically adjust settings based on the environment.
+        Environment variable values always take precedence.
+        """
+
+        if self.environment == "dev":
+            self.reload = True
+            self.workers_count = 1
+        elif self.environment == "prod":
+            self.reload = False
+            cpu_count = multiprocessing.cpu_count()
+            self.workers_count = cpu_count * 2 + 1
 
     @property
     def db_url(self) -> URL:
